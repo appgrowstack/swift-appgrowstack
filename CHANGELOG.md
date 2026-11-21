@@ -7,20 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-22
+
 ### Added
 
+- `SupportAppGrowStack`: `AppGrowStackSupportTransport.sendFeedback(_:campaign:choice:context:lang:)`
+  sends what a person wrote in a survey (or from settings) to `POST /v1/support/feedback`.
 - `CampaignAppGrowStack`: `stack.campaignContext`, the engine's context from the stack's values with
   the first-seen date.
 - `ConfigAppGrowStack` (trait `Config`, swift-app-config 0.1): `stack.configSource(fallback:)` fetches
   the config set with `GET /v1/config/sets/<public key>` (ETag, 304, the `AppGrowStack-Client` header
   naming swift-app-config); `stack.configContext` gives the device values for rules.
 
+### Changed
+
+- Needs swift-app-campaign 0.4, swift-app-support 0.3 and swift-app-sessions 0.1.1.
+
+### Fixed
+
+- `SessionsAppGrowStack` sends each batch with `AppGrowStack.installID` as its `install_id`, so the light
+  record joins the same install as the analytics, links and support. It sent the id the recorder kept.
+
 ## [0.1.0] - 2026-11-21
 
 ### Added
-
-- `SupportAppGrowStack`: `AppGrowStackSupportTransport.sendFeedback(_:campaign:choice:context:lang:)`
-  sends what a person wrote in a survey (or from settings) to `POST /v1/support/feedback`.
 
 - `AppGrowStackCore`: `AppGrowStack`, the one value the connectors read (public key, environment,
   lowercase install id, first-seen date, recent activity) and `request(_:_:query:sdk:version:)`,

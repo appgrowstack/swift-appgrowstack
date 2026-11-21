@@ -93,7 +93,7 @@ Product > Build Documentation. Changes are listed in [CHANGELOG.md](./CHANGELOG.
 Add the package and enable a trait for each package you use:
 
 ```swift
-.package(url: "https://github.com/appgrowstack/swift-appgrowstack.git", .upToNextMinor(from: "0.1.0"), traits: ["Links", "Support", "Campaign"])
+.package(url: "https://github.com/appgrowstack/swift-appgrowstack.git", .upToNextMinor(from: "0.2.0"), traits: ["Links", "Support", "Campaign"])
 ```
 
 Then add the connector products to your target:
