@@ -36,6 +36,8 @@ let stack = AppGrowStack(
 | `LinksAppGrowStack` | `Links` | swift-app-links | `stack.attributionResolver()`：流入元をサーバーで決める（`POST /v1/links/attributions`）。短いリンクに書いた流入元も使う |
 | `SupportAppGrowStack` | `Support` | swift-app-support | `stack.supportTransport()`：画像つきの問い合わせ・このinstallの問い合わせと返事（owner tokenはKeychain）・ヘルプの記事をサーバーで。`stack.supportContext()`：つなぐ型の直近の出来事と出したキャンペーンを入れた文脈 |
 | `CampaignAppGrowStack` | `Campaign` | swift-app-campaign | `stack.campaignSource(fallback:)`：組をサーバーから取る（ETag・304）。最初に取れるまでは同梱の組 |
+| `NotificationsAppGrowStack` | `Notifications` | swift-app-notifications | `stack.notificationOpenReporter()`：通知が開かれたことをサーバーに知らせる（`POST /v1/notify/opened`）。`report(sendID:)` を `NotificationCenterDelegate(reportOpened:)` に渡す |
+| `SessionsAppGrowStack` | `Sessions` | swift-app-sessions | `stack.sessionSink()`：軽い記録のバッチを送る `SessionSink`（`POST /v1/sessions/batches`）。サーバーの録画の判断と残す props を返す |
 
 ```swift
 import LinksAppGrowStack
