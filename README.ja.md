@@ -89,7 +89,7 @@ XcodeのProduct > Build Documentationで開けます。変更は [CHANGELOG.md](
 パッケージを足し、使うパッケージごとにtraitを有効にします。
 
 ```swift
-.package(url: "https://github.com/appgrowstack/swift-appgrowstack.git", .upToNextMinor(from: "0.2.0"), traits: ["Links", "Support", "Campaign"])
+.package(url: "https://github.com/appgrowstack/swift-appgrowstack.git", .upToNextMinor(from: "0.3.0"), traits: ["Links", "Support", "Campaign"])
 ```
 
 ターゲットにコネクターのプロダクトを足します。

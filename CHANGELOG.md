@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-22
+
 ### Added
 
 - `AppGrowStackCore`: `AppGrowStackAnswer`, the one table every connector reads a status with:
