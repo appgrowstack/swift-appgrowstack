@@ -39,11 +39,19 @@ let stack = AppGrowStack(
 | Product | Trait | SDK | What it adds |
 |---|---|---|---|
 | `LinksAppGrowStack` | `Links` | swift-app-links | `stack.attributionResolver()`: the install's source decided on the server (`POST /v1/links/attributions`), with the short links' own sources |
+| `SupportAppGrowStack` | `Support` | swift-app-support | `stack.supportTransport()`: requests with screenshots, the install's own requests and replies (owner token in the Keychain) and help articles on the server. `stack.supportContext()`: the context with the stack's recent events and campaigns shown |
 
 ```swift
 import LinksAppGrowStack
 
 let attribution = AttributionReporter(installID: stack.installID, appVersion: stack.app.version, resolver: stack.attributionResolver())
+```
+
+```swift
+import SupportAppGrowStack
+
+let support = SupportCenter(transport: stack.supportTransport(uid: { auth.uid }), lang: "ja",
+                            context: stack.supportContext(isPremium: { premium.isPremium }))
 ```
 
 ## Installation

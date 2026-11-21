@@ -15,3 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   SDKs it enables.
 - `LinksAppGrowStack` (trait `Links`, swift-app-links 0.2): `stack.attributionResolver()` decides the
   install's source with `POST /v1/links/attributions`.
+- `SupportAppGrowStack` (trait `Support`, swift-app-support 0.2): `stack.supportTransport()` (requests,
+  screenshots, replies with the owner token in the Keychain, help articles on `/v1/support/*`) and
+  `stack.supportContext()` (the context with the stack's recent activity).

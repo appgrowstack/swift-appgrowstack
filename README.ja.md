@@ -34,11 +34,19 @@ let stack = AppGrowStack(
 | product | trait | SDK | 足す物 |
 |---|---|---|---|
 | `LinksAppGrowStack` | `Links` | swift-app-links | `stack.attributionResolver()`：流入元をサーバーで決める（`POST /v1/links/attributions`）。短いリンクに書いた流入元も使う |
+| `SupportAppGrowStack` | `Support` | swift-app-support | `stack.supportTransport()`：画像つきの問い合わせ・このinstallの問い合わせと返事（owner tokenはKeychain）・ヘルプの記事をサーバーで。`stack.supportContext()`：つなぐ型の直近の出来事と出したキャンペーンを入れた文脈 |
 
 ```swift
 import LinksAppGrowStack
 
 let attribution = AttributionReporter(installID: stack.installID, appVersion: stack.app.version, resolver: stack.attributionResolver())
+```
+
+```swift
+import SupportAppGrowStack
+
+let support = SupportCenter(transport: stack.supportTransport(uid: { auth.uid }), lang: "ja",
+                            context: stack.supportContext(isPremium: { premium.isPremium }))
 ```
 
 ## 入れ方

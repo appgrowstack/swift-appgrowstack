@@ -32,14 +32,19 @@ let package = Package(
         // The value every connector reads. Depends on no SDK.
         .library(name: "AppGrowStackCore", targets: ["AppGrowStackCore"]),
         // stack.attributionResolver(): the install's source decided on the server. Trait "Links".
-        .library(name: "LinksAppGrowStack", targets: ["LinksAppGrowStack"])
+        .library(name: "LinksAppGrowStack", targets: ["LinksAppGrowStack"]),
+        // stack.supportTransport() and stack.supportContext(): requests, replies, screenshots and help
+        // articles on the server, with the stack's recent activity attached. Trait "Support".
+        .library(name: "SupportAppGrowStack", targets: ["SupportAppGrowStack"])
     ],
     traits: [
         .trait(name: "Links", description: "LinksAppGrowStack (swift-app-links)"),
+        .trait(name: "Support", description: "SupportAppGrowStack (swift-app-support)"),
         .default(enabledTraits: [])
     ],
     dependencies: [
-        sdk("swift-app-links", from: "0.2.0")
+        sdk("swift-app-links", from: "0.2.0"),
+        sdk("swift-app-support", from: "0.2.0")
     ],
     targets: [
         .target(name: "AppGrowStackCore"),
@@ -47,7 +52,12 @@ let package = Package(
             "AppGrowStackCore",
             .product(name: "AppLinks", package: "swift-app-links", condition: .when(traits: ["Links"]))
         ]),
+        .target(name: "SupportAppGrowStack", dependencies: [
+            "AppGrowStackCore",
+            .product(name: "SupportCore", package: "swift-app-support", condition: .when(traits: ["Support"]))
+        ]),
         .testTarget(name: "AppGrowStackCoreTests", dependencies: ["AppGrowStackCore"]),
-        .testTarget(name: "LinksAppGrowStackTests", dependencies: ["LinksAppGrowStack", "AppGrowStackCore"])
+        .testTarget(name: "LinksAppGrowStackTests", dependencies: ["LinksAppGrowStack", "AppGrowStackCore"]),
+        .testTarget(name: "SupportAppGrowStackTests", dependencies: ["SupportAppGrowStack", "AppGrowStackCore"])
     ]
 )
