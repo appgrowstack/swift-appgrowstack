@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - `CampaignAppGrowStack`: `stack.campaignContext`, the engine's context from the stack's values with
   the first-seen date.
+- `ConfigAppGrowStack` (trait `Config`, swift-app-config 0.1): `stack.configSource(fallback:)` fetches
+  the config set with `GET /v1/config/sets/<public key>` (ETag, 304, the `AppGrowStack-Client` header
+  naming swift-app-config); `stack.configContext` gives the device values for rules.
 
 ## [0.1.0] - 2026-11-21
 

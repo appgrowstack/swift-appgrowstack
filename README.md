@@ -33,6 +33,7 @@ appgrowstack server: one `AppGrowStack` value, and one connector product per pac
 | `CampaignAppGrowStack` | `Campaign` | swift-app-campaign | `stack.campaignSource(fallback:)`: the set fetched from the server (ETag, 304), the bundled set until the first fetch succeeds |
 | `NotificationsAppGrowStack` | `Notifications` | swift-app-notifications | `stack.notificationOpenReporter()`: tells the server a delivery was opened (`POST /v1/notify/opened`). Hand `report(sendID:)` to `NotificationCenterDelegate(reportOpened:)` |
 | `SessionsAppGrowStack` | `Sessions` | swift-app-sessions | `stack.sessionSink()`: the `SessionSink` that sends the light record's batches (`POST /v1/sessions/batches`) and hands back the server's replay decision and kept properties |
+| `ConfigAppGrowStack` | `Config` | swift-app-config | `stack.configSource(fallback:)` and `stack.configContext`: the config set fetched from the server (ETag, 304), the bundled set until the first fetch succeeds |
 
 ## Quick Start
 
@@ -103,7 +104,7 @@ Then add the connector products to your target:
 .product(name: "CampaignAppGrowStack", package: "swift-appgrowstack"),
 ```
 
-The traits are `Links`, `Support`, `Campaign`, `Notifications` and `Sessions`. None is enabled by
+The traits are `Links`, `Support`, `Campaign`, `Notifications`, `Sessions` and `Config`. None is enabled by
 default.
 
 ## Requirements

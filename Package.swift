@@ -42,7 +42,10 @@ let package = Package(
         // stack.notificationOpenReporter(): tells the server a delivery was opened. Trait "Notifications".
         .library(name: "NotificationsAppGrowStack", targets: ["NotificationsAppGrowStack"]),
         // stack.sessionSink(): the light record's batches sent to the server. Trait "Sessions".
-        .library(name: "SessionsAppGrowStack", targets: ["SessionsAppGrowStack"])
+        .library(name: "SessionsAppGrowStack", targets: ["SessionsAppGrowStack"]),
+        // stack.configSource(fallback:) and stack.configContext: the R9 set fetched from the server
+        // (ETag, 304), the bundled set until the first fetch. Trait "Config".
+        .library(name: "ConfigAppGrowStack", targets: ["ConfigAppGrowStack"])
     ],
     traits: [
         .trait(name: "Links", description: "LinksAppGrowStack (swift-app-links)"),
@@ -50,6 +53,7 @@ let package = Package(
         .trait(name: "Campaign", description: "CampaignAppGrowStack (swift-app-campaign)"),
         .trait(name: "Notifications", description: "NotificationsAppGrowStack (swift-app-notifications)"),
         .trait(name: "Sessions", description: "SessionsAppGrowStack (swift-app-sessions)"),
+        .trait(name: "Config", description: "ConfigAppGrowStack (swift-app-config)"),
         .default(enabledTraits: [])
     ],
     dependencies: [
@@ -57,7 +61,8 @@ let package = Package(
         sdk("swift-app-support", from: "0.2.0"),
         sdk("swift-app-campaign", from: "0.3.0"),
         sdk("swift-app-notifications", from: "0.2.2"),
-        sdk("swift-app-sessions", from: "0.1.0")
+        sdk("swift-app-sessions", from: "0.1.0"),
+        sdk("swift-app-config", from: "0.1.0")
     ],
     targets: [
         .target(name: "AppGrowStackCore"),
@@ -81,6 +86,10 @@ let package = Package(
             "AppGrowStackCore",
             .product(name: "SessionsCore", package: "swift-app-sessions", condition: .when(traits: ["Sessions"]))
         ]),
+        .target(name: "ConfigAppGrowStack", dependencies: [
+            "AppGrowStackCore",
+            .product(name: "ConfigCore", package: "swift-app-config", condition: .when(traits: ["Config"]))
+        ]),
         .testTarget(name: "AppGrowStackCoreTests", dependencies: ["AppGrowStackCore"]),
         .testTarget(name: "LinksAppGrowStackTests", dependencies: ["LinksAppGrowStack", "AppGrowStackCore"]),
         .testTarget(name: "SupportAppGrowStackTests", dependencies: ["SupportAppGrowStack", "AppGrowStackCore"]),
@@ -90,6 +99,7 @@ let package = Package(
             "SessionsAppGrowStack",
             "AppGrowStackCore",
             .product(name: "SessionsCore", package: "swift-app-sessions", condition: .when(traits: ["Sessions"]))
-        ])
+        ]),
+        .testTarget(name: "ConfigAppGrowStackTests", dependencies: ["ConfigAppGrowStack", "AppGrowStackCore"])
     ]
 )

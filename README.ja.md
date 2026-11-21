@@ -27,6 +27,7 @@ swift-app-*のパッケージはどれも単体で動きます。このパッケ
 | `CampaignAppGrowStack` | `Campaign` | swift-app-campaign | `stack.campaignSource(fallback:)`: 組をサーバーから取る（ETag・304）。最初の取得が通るまでは同梱した組を使う |
 | `NotificationsAppGrowStack` | `Notifications` | swift-app-notifications | `stack.notificationOpenReporter()`: 通知が開かれたことをサーバーに伝える（`POST /v1/notify/opened`）。`report(sendID:)` を `NotificationCenterDelegate(reportOpened:)` に渡す |
 | `SessionsAppGrowStack` | `Sessions` | swift-app-sessions | `stack.sessionSink()`: 軽い記録のバッチを送る `SessionSink`（`POST /v1/sessions/batches`）。サーバーが決めたリプレイの要否と残すプロパティを返す |
+| `ConfigAppGrowStack` | `Config` | swift-app-config | `stack.configSource(fallback:)` と `stack.configContext`: 設定の組をサーバーから取る（ETag・304）。最初の取得が通るまでは同梱した組を使う |
 
 ## はじめに
 
@@ -97,7 +98,7 @@ XcodeのProduct > Build Documentationで開けます。変更は [CHANGELOG.md](
 .product(name: "CampaignAppGrowStack", package: "swift-appgrowstack"),
 ```
 
-traitは `Links`・`Support`・`Campaign`・`Notifications`・`Sessions` です。指定しなければ1つも有効になりません。
+traitは `Links`・`Support`・`Campaign`・`Notifications`・`Sessions`・`Config` です。指定しなければ1つも有効になりません。
 
 ## 動く環境
 
