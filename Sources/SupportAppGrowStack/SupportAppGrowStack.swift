@@ -141,6 +141,39 @@ public struct AppGrowStackSupportTransport: SupportTransport, HelpArticleSource 
         return list.articles
     }
 
+    /// Sends what a person wrote: in a survey (`campaign` and the `choice` they picked, the id the
+    /// sheet handed `CampaignEngine.answer`), or from a "send feedback" screen in settings (both `nil`).
+    /// No reply comes back; the words are sorted into topics on the server. Empty text is not sent.
+    /// - Returns: the feedback id, or `nil` when there was nothing to send.
+    @discardableResult
+    public func sendFeedback(_ text: String, campaign: String? = nil, choice: String? = nil,
+                             context: SupportContext, lang: String) async throws -> String? {
+        struct Body: Encodable {
+            let install_id: String
+            let uid: String?
+            let lang: String
+            let campaign: String?
+            let choice: String?
+            let text: String
+            let context: SupportContext
+        }
+        struct Created: Decodable { let feedback_id: String }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let body = Body(
+            install_id: stack.installID,
+            uid: uid(),
+            lang: lang,
+            campaign: campaign,
+            // A choice belongs to a survey; without the campaign the server would refuse it.
+            choice: campaign == nil ? nil : choice,
+            text: String(trimmed.prefix(2000)),
+            context: context
+        )
+        let created: Created = try await call("POST", "/v1/support/feedback", json: body, token: false)
+        return created.feedback_id
+    }
+
     // MARK: - HTTP
 
     private func request(_ method: String, _ path: String, token: Bool) -> URLRequest {

@@ -76,6 +76,34 @@ struct SupportAppGrowStackTests {
         #expect(upload.httpBody == Data([1, 2, 3]))
     }
 
+    @Test func sendFeedbackSendsTheContractBodyWithoutAToken() async throws {
+        let http = FakeHTTP()
+        http.answers["POST /v1/support/feedback"] = (201, #"{"feedback_id":"fbk_0123456789abcdef","created_at":1}"#)
+        let tokens = MemorySupportTokenStore()
+        let transport = stack(http).supportTransport(uid: { nil }, tokens: tokens)
+
+        let id = try await transport.sendFeedback(" 値段がもう少し安ければ \n", campaign: "survey-why-not-premium", choice: "choice_1",
+                                                  context: context(), lang: "ja")
+        #expect(id == "fbk_0123456789abcdef")
+        let request = http.requests[0]
+        #expect(request.url?.absoluteString == "https://api.appgrowstack.com/v1/support/feedback")
+        #expect(request.value(forHTTPHeaderField: "X-Support-Token") == nil)
+        let body = try http.json(0)
+        #expect(Set(body.keys) == ["install_id", "lang", "campaign", "choice", "text", "context"])
+        #expect(body["text"] as? String == "値段がもう少し安ければ")
+        #expect(body["choice"] as? String == "choice_1")
+        #expect(tokens.load() == nil)
+
+        // From settings: no campaign, so no choice either. Nothing written: nothing sent.
+        _ = try await transport.sendFeedback("同期が欲しい", choice: "choice_2", context: context(), lang: "ja")
+        #expect(Set(try http.json(1).keys) == ["install_id", "lang", "text", "context"])
+        #expect(try await transport.sendFeedback("  \n", context: context(), lang: "ja") == nil)
+        #expect(http.requests.count == 2)
+
+        http.answers["POST /v1/support/feedback"] = (429, #"{"error":{"code":"rate_limited","message":"1時間に5件まで"}}"#)
+        await #expect(throws: SupportError.rateLimited) { try await transport.sendFeedback("x", context: context(), lang: "ja") }
+    }
+
     @Test func ticketsAreEmptyWithoutATokenAndReadWithIt() async throws {
         let http = FakeHTTP()
         http.answers["GET /v1/support/tickets"] = (200, ticketJSON)

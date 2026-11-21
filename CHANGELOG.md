@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `SupportAppGrowStack`: `AppGrowStackSupportTransport.sendFeedback(_:campaign:choice:context:lang:)`
+  sends what a person wrote in a survey (or from settings) to `POST /v1/support/feedback`.
+
 - `AppGrowStackCore`: `AppGrowStack`, the one value the connectors read (public key, environment,
   lowercase install id, first-seen date, recent activity) and `request(_:_:query:sdk:version:)`,
   whose `AppGrowStack-Client` header names the SDK the connector serves and its version, from that
