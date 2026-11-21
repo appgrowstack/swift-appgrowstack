@@ -2,6 +2,7 @@
 import AppGrowStackCore
 import Foundation
 import NotificationsAppGrowStack
+import RemoteNotifications
 import Testing
 
 final class FakeHTTP: AppGrowStackHTTP, @unchecked Sendable {
@@ -41,7 +42,7 @@ struct NotificationsAppGrowStackTests {
         #expect(request.url?.absoluteString == "https://api.appgrowstack.com/v1/notify/opened")
         #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer pk_KUdMabcdefghijklmnopqrst")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
-        #expect(request.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.4.0/swift-appgrowstack/\(AppGrowStack.sdkVersion)")
+        #expect(request.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.4.0/swift-app-notifications/\(NotificationsSDK.version)")
         let body = try JSONSerialization.jsonObject(with: try #require(request.httpBody)) as? [String: String]
         #expect(body == ["send_id": sendID])
     }

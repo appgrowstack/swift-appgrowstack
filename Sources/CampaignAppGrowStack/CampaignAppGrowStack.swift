@@ -24,13 +24,11 @@ public struct AppGrowStackCampaignSetFetcher: CampaignSetFetching {
     }
 
     private func fromServer(etag: String?) async throws -> CampaignFetchResult {
-        var request = stack.request("GET", "/v1/campaigns/sets/\(stack.publicKey)")
+        var request = stack.request("GET", "/v1/campaigns/sets/\(stack.publicKey)", sdk: CampaignSDK.name, version: CampaignSDK.version)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.timeoutInterval = 10
         // The key is in the path (auth "public_key_path"); the set is the same for everyone.
         request.setValue(nil, forHTTPHeaderField: "Authorization")
-        request.setValue("\(stack.app.platform)/\(stack.app.version)/\(CampaignSDK.name)/\(CampaignSDK.version)",
-                         forHTTPHeaderField: "AppGrowStack-Client")
         if let etag { request.setValue(etag, forHTTPHeaderField: "If-None-Match") }
         let (data, response) = try await stack.send(request)
         switch response.statusCode {

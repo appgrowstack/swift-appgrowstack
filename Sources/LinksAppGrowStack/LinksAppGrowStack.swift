@@ -9,7 +9,7 @@ public struct AppGrowStackAttributionResolver: AttributionResolving {
     let stack: AppGrowStack
 
     public func resolve(_ request: AttributionRequest) async -> AttributionResolution {
-        var http = stack.request("POST", "/v1/links/attributions")
+        var http = stack.request("POST", "/v1/links/attributions", sdk: AppLinksSDK.name, version: AppLinksSDK.version)
         http.setValue("application/json", forHTTPHeaderField: "Content-Type")
         var body = request
         body.installID = stack.installID

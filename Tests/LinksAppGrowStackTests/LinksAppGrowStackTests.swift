@@ -43,7 +43,7 @@ struct LinksAppGrowStackTests {
         #expect(sent.httpMethod == "POST")
         #expect(sent.url?.absoluteString == "https://api-staging.appgrowstack.com/v1/links/attributions")
         #expect(sent.value(forHTTPHeaderField: "Authorization") == "Bearer pk_KUdMabcdefghijklmnopqrst")
-        #expect(sent.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.3.0/swift-appgrowstack/\(AppGrowStack.sdkVersion)")
+        #expect(sent.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.3.0/swift-app-links/\(AppLinksSDK.version)")
         let body = try #require(try JSONSerialization.jsonObject(with: sent.httpBody ?? Data()) as? [String: Any])
         #expect(body["install_id"] as? String == "3f2a9c1e-0b7d-4e55-9a10-7c3d2b1a0f99")
         #expect(Set(body.keys) == ["install_id", "platform", "app_version", "first_open_at", "opened_url", "apple_ads_token"])

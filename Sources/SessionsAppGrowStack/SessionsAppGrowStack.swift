@@ -22,7 +22,7 @@ public struct AppGrowStackSessionSink: SessionSink {
     }
 
     public func send(_ batch: SessionBatch) async throws -> SessionSinkReply {
-        var request = stack.request("POST", "/v1/sessions/batches")
+        var request = stack.request("POST", "/v1/sessions/batches", sdk: SessionsSDK.name, version: SessionsSDK.version)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try batch.jsonData()
         let (data, response) = try await stack.send(request)

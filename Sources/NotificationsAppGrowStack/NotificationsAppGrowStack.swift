@@ -20,7 +20,7 @@ public struct AppGrowStackNotificationOpenReporter: Sendable {
     }
 
     public func report(sendID: String) async throws {
-        var request = stack.request("POST", "/v1/notify/opened")
+        var request = stack.request("POST", "/v1/notify/opened", sdk: NotificationsSDK.name, version: NotificationsSDK.version)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(["send_id": sendID])
         let (_, response) = try await stack.send(request)

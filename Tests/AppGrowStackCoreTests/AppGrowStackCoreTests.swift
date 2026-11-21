@@ -47,15 +47,16 @@ struct AppGrowStackTests {
     @Test func requestsCarryTheKeyAndTheClientHeader() async throws {
         let http = FakeHTTP()
         let s = stack(environment: .staging, http: http)
-        let request = s.request("GET", "/v1/support/articles", query: [URLQueryItem(name: "lang", value: "zh-Hant")])
+        let request = s.request("GET", "/v1/support/articles", query: [URLQueryItem(name: "lang", value: "zh-Hant")],
+                                sdk: "swift-app-support", version: "0.2.0")
         _ = try await s.send(request)
         let sent = try #require(http.requests.first)
         #expect(sent.httpMethod == "GET")
         #expect(sent.url?.absoluteString == "https://api-staging.appgrowstack.com/v1/support/articles?lang=zh-Hant")
         #expect(sent.value(forHTTPHeaderField: "Authorization") == "Bearer pk_KUdMabcdefghijklmnopqrst")
-        // contracts K2-5: <platform>/<app version>/<sdk>/<sdk version>
-        #expect(sent.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.3.0/swift-appgrowstack/\(AppGrowStack.sdkVersion)")
-        #expect(s.clientHeader.wholeMatch(of: /(ios|android)\/\d+\.\d+(\.\d+)?\/[a-z][a-z0-9-]{1,40}\/\d+\.\d+\.\d+/) != nil)
+        // contracts K2-5: <platform>/<app version>/<sdk>/<sdk version>, naming the SDK the connector serves
+        #expect(sent.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.3.0/swift-app-support/0.2.0")
+        #expect(s.clientHeader(sdk: "swift-app-sessions", version: "0.1.0").wholeMatch(of: /(ios|android)\/\d+\.\d+(\.\d+)?\/[a-z][a-z0-9-]{1,40}\/\d+\.\d+\.\d+/) != nil)
     }
 
     @Test func firstSeenIsTheEarliestAndIsKept() {

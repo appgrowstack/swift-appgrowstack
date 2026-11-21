@@ -50,6 +50,7 @@ struct SessionsAppGrowStackTests {
         #expect(request.url?.absoluteString == "https://api-staging.appgrowstack.com/v1/sessions/batches")
         #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer pk_KUdMabcdefghijklmnopqrst")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+        #expect(request.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.4.0/swift-app-sessions/\(SessionsSDK.version)")
         #expect(request.httpBody == (try batch.jsonData()))
     }
 

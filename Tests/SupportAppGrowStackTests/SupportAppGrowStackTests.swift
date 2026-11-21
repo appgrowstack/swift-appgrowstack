@@ -57,7 +57,7 @@ struct SupportAppGrowStackTests {
         let first = http.requests[0]
         #expect(first.url?.absoluteString == "https://api.appgrowstack.com/v1/support/tickets")
         #expect(first.value(forHTTPHeaderField: "Authorization") == "Bearer pk_KUdMabcdefghijklmnopqrst")
-        #expect(first.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.2.0/swift-appgrowstack/\(AppGrowStack.sdkVersion)")
+        #expect(first.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.2.0/swift-app-support/\(SupportSDK.version)")
         #expect(first.value(forHTTPHeaderField: "X-Support-Token") == nil)
         let body = try http.json(0)
         #expect(Set(body.keys) == ["install_id", "uid", "owner_token", "lang", "category", "body", "context"])

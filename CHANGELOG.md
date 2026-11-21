@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-21
+
 ### Added
 
 - `AppGrowStackCore`: `AppGrowStack`, the one value the connectors read (public key, environment,
-  lowercase install id, first-seen date, recent activity, the `AppGrowStack-Client` header).
+  lowercase install id, first-seen date, recent activity) and `request(_:_:query:sdk:version:)`,
+  whose `AppGrowStack-Client` header names the SDK the connector serves and its version, from that
+  SDK's constants (`ios/3.4.0/swift-app-sessions/0.1.0`), never this package.
 - Connector targets are added per SDK behind a trait of the same name, so an app fetches only the
   SDKs it enables.
 - `LinksAppGrowStack` (trait `Links`, swift-app-links 0.2): `stack.attributionResolver()` decides the

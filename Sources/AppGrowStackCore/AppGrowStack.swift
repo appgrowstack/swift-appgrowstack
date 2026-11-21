@@ -17,10 +17,6 @@ import Foundation
 /// )
 /// ```
 public final class AppGrowStack: Sendable {
-    /// The name and version sent in `AppGrowStack-Client`.
-    public static let sdkName = "swift-appgrowstack"
-    public static let sdkVersion = "0.1.0"
-
     public let publicKey: String
     public let environment: AppGrowStackEnvironment
     /// Always lowercase (the contract's form), whatever case the app passed.
@@ -72,22 +68,26 @@ public final class AppGrowStack: Sendable {
     }
 
     /// `AppGrowStack-Client: <platform>/<app version>/<sdk>/<sdk version>` (contracts K2-5).
-    public var clientHeader: String {
-        "\(app.platform)/\(app.version)/\(Self.sdkName)/\(Self.sdkVersion)"
+    ///
+    /// `sdk` and `version` are the SDK the connector serves (`CampaignSDK.name`, `SessionsSDK.version`,
+    /// …), not this package, so the server counts which versions of that SDK call.
+    public func clientHeader(sdk: String, version: String) -> String {
+        "\(app.platform)/\(app.version)/\(sdk)/\(version)"
     }
 
-    /// A request to `path` under the environment's root, with the public key and the client header.
-    public func request(_ method: String, _ path: String, query: [URLQueryItem] = []) -> URLRequest {
+    /// A request to `path` under the environment's root, with the public key and the client header
+    /// naming `sdk` at `version` (``clientHeader(sdk:version:)``).
+    public func request(_ method: String, _ path: String, query: [URLQueryItem] = [], sdk: String, version: String) -> URLRequest {
         var components = URLComponents(url: environment.baseURL.appending(path: path), resolvingAgainstBaseURL: false)!
         if !query.isEmpty { components.queryItems = query }
         var request = URLRequest(url: components.url!, timeoutInterval: 20)
         request.httpMethod = method
         request.setValue("Bearer \(publicKey)", forHTTPHeaderField: "Authorization")
-        request.setValue(clientHeader, forHTTPHeaderField: "AppGrowStack-Client")
+        request.setValue(clientHeader(sdk: sdk, version: version), forHTTPHeaderField: "AppGrowStack-Client")
         return request
     }
 
-    /// Sends a request built with ``request(_:_:query:)``.
+    /// Sends a request built with ``request(_:_:query:sdk:version:)``.
     public func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         try await http.send(request)
     }

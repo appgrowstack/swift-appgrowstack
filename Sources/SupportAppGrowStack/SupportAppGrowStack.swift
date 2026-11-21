@@ -136,14 +136,15 @@ public struct AppGrowStackSupportTransport: SupportTransport, HelpArticleSource 
 
     public func articles(lang: String) async throws -> [HelpArticle] {
         struct List: Decodable { let articles: [HelpArticle] }
-        let list: List = try await decode(stack.request("GET", "/v1/support/articles", query: [URLQueryItem(name: "lang", value: lang)]))
+        let list: List = try await decode(stack.request("GET", "/v1/support/articles", query: [URLQueryItem(name: "lang", value: lang)],
+                                                                    sdk: SupportSDK.name, version: SupportSDK.version))
         return list.articles
     }
 
     // MARK: - HTTP
 
     private func request(_ method: String, _ path: String, token: Bool) -> URLRequest {
-        var req = stack.request(method, path)
+        var req = stack.request(method, path, sdk: SupportSDK.name, version: SupportSDK.version)
         if token { req.setValue(ownerToken(), forHTTPHeaderField: "X-Support-Token") }
         return req
     }
