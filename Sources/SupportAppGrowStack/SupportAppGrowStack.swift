@@ -82,7 +82,10 @@ public struct AppGrowStackSupportTransport: SupportTransport, HelpArticleSource 
     /// Whether this install has ever sent a request (and so may have replies to read).
     public var hasOwnerToken: Bool { (tokens.load()?.count ?? 0) >= 32 }
 
-    public func submit(_ request: SupportRequest, context: SupportContext, lang: String) async throws -> String {
+    /// Makes the request, then sends its images one by one. Throws only when the request was not
+    /// made; an image that fails after that comes back in ``SupportSubmission/unsentImages`` (sending
+    /// the whole form again would make a second request).
+    public func submit(_ request: SupportRequest, context: SupportContext, lang: String) async throws -> SupportSubmission {
         struct Body: Encodable {
             let install_id: String
             let uid: String?
@@ -109,10 +112,15 @@ public struct AppGrowStackSupportTransport: SupportTransport, HelpArticleSource 
             context: context
         )
         let created: Created = try await call("POST", "/v1/support/tickets", json: body, token: false)
+        var unsent: [SupportImage] = []
         for image in request.images.prefix(4) {
-            _ = try await uploadImage(image, ticketID: created.ticket_id)
+            do {
+                _ = try await uploadImage(image, ticketID: created.ticket_id)
+            } catch {
+                unsent.append(image)
+            }
         }
-        return created.ticket_id
+        return SupportSubmission(ticketID: created.ticket_id, unsentImages: unsent)
     }
 
     public func tickets() async throws -> [SupportTicket] {

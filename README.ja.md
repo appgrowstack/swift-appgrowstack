@@ -16,6 +16,7 @@ swift-app-*のパッケージはどれも単体で動きます。このパッケ
 - **コネクターはパッケージごとに、traitで分ける。** コネクターは同じ名前のtraitを有効にしたときだけ、そのパッケージに依存します。SwiftPMは使うパッケージだけを取りに行きます
 - **共通の情報。** install idの小文字への揃えは1か所で行います。初回の日付は知っている中で一番早い物にします（指定しなければ `UserDefaults` に保存）。直近の出来事と出したキャンペーンは、問い合わせのコネクターのために `stack.activity` に持ちます
 - **環境。** `.production`・`.staging`・`.local(URL)`。どのリクエストにも公開キーと `AppGrowStack-Client` のヘッダーを付けます
+- **答えの読み方は1つの表。** `AppGrowStackAnswer` がどのコネクターでも同じに読みます。2xxは終わり、401・403・408・429・5xxは後で送り直し、ほかの4xxは捨てます
 
 ### コネクター
 
@@ -46,7 +47,8 @@ let stack = AppGrowStack(
 @MainActor let attribution = AttributionReporter(
     installID: stack.installID,
     appVersion: stack.app.version,
-    resolver: stack.attributionResolver()
+    resolver: stack.attributionResolver(),
+    firstOpenAt: stack.firstSeenAt
 )
 ```
 

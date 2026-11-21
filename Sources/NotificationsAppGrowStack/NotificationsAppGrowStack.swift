@@ -6,13 +6,14 @@ import RemoteNotifications
 /// Tells appgrowstack that a delivery was opened: `POST /v1/notify/opened` with `{"send_id": …}`.
 /// Give ``report(sendID:)`` to `NotificationCenterDelegate(reportOpened:)`.
 ///
-/// The server answers 204 even for a `send_id` it does not know, so any 2xx and any other 4xx
-/// count as done (sending the same body again would not change the answer). A failed connection,
-/// 429 and 5xx throw, so the app can retry.
+/// The status is read with ``AppGrowStackAnswer``. The server answers 204 even for a `send_id` it
+/// does not know, so any 2xx and a body that will never pass (400 and the other 4xx but 401, 403,
+/// 408 and 429) count as done. A failed connection and the rest (401 and 403, 408, 429, 5xx) throw,
+/// so `NotificationCenterDelegate` keeps the `send_id` and sends it again later.
 public struct AppGrowStackNotificationOpenReporter: Sendable {
     let stack: AppGrowStack
 
-    /// Thrown for 429 and 5xx.
+    /// Thrown for an answer to send again later (401, 403, 408, 429, 5xx).
     public struct Failure: Error, Equatable {
         public let status: Int
 
@@ -24,7 +25,7 @@ public struct AppGrowStackNotificationOpenReporter: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(["send_id": sendID])
         let (_, response) = try await stack.send(request)
-        if response.statusCode == 429 || response.statusCode >= 500 {
+        if AppGrowStackAnswer(status: response.statusCode) == .retryLater {
             throw Failure(status: response.statusCode)
         }
     }

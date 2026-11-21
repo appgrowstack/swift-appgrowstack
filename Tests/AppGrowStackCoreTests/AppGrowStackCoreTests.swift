@@ -83,6 +83,15 @@ struct AppGrowStackTests {
     }
 }
 
+struct AppGrowStackAnswerTests {
+    @Test func oneTableForEveryConnector() {
+        for status in [200, 201, 202, 204] { #expect(AppGrowStackAnswer(status: status) == .accepted) }
+        // The key or the project is fixed on the server, not on the device: the same body passes later
+        for status in [401, 403, 408, 429, 500, 502, 503] { #expect(AppGrowStackAnswer(status: status) == .retryLater) }
+        for status in [400, 404, 409, 413, 422] { #expect(AppGrowStackAnswer(status: status) == .rejected) }
+    }
+}
+
 struct AppGrowStackActivityTests {
     @Test func keepsTheNewestWithinTheLimits() {
         let activity = AppGrowStackActivity()

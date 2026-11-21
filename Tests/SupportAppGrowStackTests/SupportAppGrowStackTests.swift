@@ -52,7 +52,7 @@ struct SupportAppGrowStackTests {
         let id = try await transport.submit(SupportRequest(category: .billing, subject: "  ", body: " 解約したい \n", email: "",
                                                            images: [SupportImage(data: Data([1, 2, 3]), contentType: "image/jpeg")]),
                                             context: context(), lang: "ja")
-        #expect(id == "tkt_0123456789abcdef")
+        #expect(id == SupportSubmission(ticketID: "tkt_0123456789abcdef"))
 
         let first = http.requests[0]
         #expect(first.url?.absoluteString == "https://api.appgrowstack.com/v1/support/tickets")
@@ -74,6 +74,23 @@ struct SupportAppGrowStackTests {
         #expect(upload.value(forHTTPHeaderField: "Content-Type") == "image/jpeg")
         #expect(upload.value(forHTTPHeaderField: "X-Support-Token") == token)
         #expect(upload.httpBody == Data([1, 2, 3]))
+    }
+
+    @Test func anImageThatFailsAfterTheRequestIsMadeComesBackInsteadOfThrowing() async throws {
+        let http = FakeHTTP()
+        http.answers["POST /v1/support/tickets"] = (201, #"{"ticket_id":"tkt_0123456789abcdef","status":"waiting","created_at":1}"#)
+        http.answers["POST /v1/support/tickets/tkt_0123456789abcdef/attachments"] = (503, "")
+        let transport = stack(http).supportTransport(tokens: MemorySupportTokenStore())
+        let images = [SupportImage(data: Data([1]), contentType: "image/jpeg"), SupportImage(data: Data([2]), contentType: "image/png")]
+
+        let submission = try await transport.submit(SupportRequest(category: .bug, body: "落ちる", images: images), context: context(), lang: "ja")
+        #expect(submission == SupportSubmission(ticketID: "tkt_0123456789abcdef", unsentImages: images))
+        // One request was made; the images are sent to it again, not with a second request
+        #expect(http.requests.filter { $0.url?.path() == "/v1/support/tickets" }.count == 1)
+
+        http.answers["POST /v1/support/tickets/tkt_0123456789abcdef/attachments"] = (201, #"{"id":"att_0123456789abcdef","content_type":"image/jpeg","bytes":1,"at":1}"#)
+        for image in submission.unsentImages { _ = try await transport.uploadImage(image, ticketID: submission.ticketID) }
+        #expect(http.requests.filter { $0.url?.path() == "/v1/support/tickets" }.count == 1)
     }
 
     @Test func sendFeedbackSendsTheContractBodyWithoutAToken() async throws {

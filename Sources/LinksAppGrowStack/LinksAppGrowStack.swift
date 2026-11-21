@@ -5,6 +5,11 @@ import Foundation
 
 /// Decides the install's source on appgrowstack (`POST /v1/links/attributions`). The server also
 /// knows the short links' own sources and records `attribution_recorded` for the person.
+///
+/// The status is read with ``AppGrowStackAnswer``: 200 is decided, a body that will never pass
+/// (400 and the other 4xx but 401, 403, 408 and 429) is rejected, and the rest (503 while Apple Ads
+/// has not answered the server, 401 and 403, 429, 5xx, no connection) is tried on a later launch, up
+/// to the reporter's `maxAttempts`.
 public struct AppGrowStackAttributionResolver: AttributionResolving {
     let stack: AppGrowStack
 
@@ -16,15 +21,13 @@ public struct AppGrowStackAttributionResolver: AttributionResolving {
         guard let encoded = try? JSONEncoder().encode(body) else { return .rejected }
         http.httpBody = encoded
         guard let (data, response) = try? await stack.send(http) else { return .retryLater }
-        switch response.statusCode {
-        case 200:
+        switch AppGrowStackAnswer(status: response.statusCode) {
+        case .accepted:
             guard let answer = try? JSONDecoder().decode(Attribution.self, from: data) else { return .retryLater }
             return .decided(answer)
-        case 400:
-            // The body will never pass; sending it again on every launch would only add noise.
+        case .rejected:
             return .rejected
-        default:
-            // 503: Apple Ads has not answered the server yet. 429 and 5xx: later.
+        case .retryLater:
             return .retryLater
         }
     }

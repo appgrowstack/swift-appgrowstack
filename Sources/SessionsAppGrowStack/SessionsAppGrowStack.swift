@@ -8,14 +8,16 @@ import SessionsCore
 ///
 /// | Answer | Reply |
 /// |---|---|
-/// | 200 | `.accepted(replay:keepProps:)` with the server's replay decision and, when the policy came along, its `events.keep_props` |
+/// | 200 | `.accepted(replay:keepProps:)` with the server's replay decision and, when the policy came along, its `events.keep_props`. A body it cannot read (a `replay` it does not know) is `.accepted()`: the batch arrived |
 /// | 204 | `.disabled` (sessions are off or paused for the project: the recorder drops what it holds) |
-/// | other 4xx (400, 413, …) | `.accepted()`: the batch will never pass, so it is dropped instead of being sent on every launch |
-/// | 429, 5xx, no connection | throws: the recorder keeps the batch and sends it again later |
+/// | a body that will never pass (400, 413 and the other 4xx but 401, 403, 408 and 429) | `.accepted()`: dropped instead of being sent on every launch |
+/// | 401, 403, 408, 429, 5xx, no connection | throws: the recorder keeps the batch and sends it again later |
+///
+/// The statuses are read with ``AppGrowStackAnswer``, the same table as every connector.
 public struct AppGrowStackSessionSink: SessionSink {
     let stack: AppGrowStack
 
-    /// Thrown for 429 and 5xx, and for a 200 whose body cannot be read.
+    /// Thrown for an answer to send again later (401, 403, 408, 429, 5xx).
     public struct Failure: Error, Equatable {
         public let status: Int
 
@@ -31,16 +33,17 @@ public struct AppGrowStackSessionSink: SessionSink {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try batch.jsonData()
         let (data, response) = try await stack.send(request)
-        switch response.statusCode {
-        case 200:
-            guard let answer = try? JSONDecoder().decode(Answer.self, from: data) else { throw Failure(status: 200) }
+        if response.statusCode == 204 { return .disabled }
+        switch AppGrowStackAnswer(status: response.statusCode) {
+        case .accepted:
+            // The batch arrived. A body this version cannot read (a newer `replay`) must not keep it at
+            // the head of the queue, sent again on every flush.
+            guard let answer = try? JSONDecoder().decode(Answer.self, from: data) else { return .accepted() }
             return .accepted(replay: answer.replay, keepProps: answer.policy?.events.keepProps)
-        case 204:
-            return .disabled
-        case 429, 500...:
-            throw Failure(status: response.statusCode)
-        default:
+        case .rejected:
             return .accepted()
+        case .retryLater:
+            throw Failure(status: response.statusCode)
         }
     }
 

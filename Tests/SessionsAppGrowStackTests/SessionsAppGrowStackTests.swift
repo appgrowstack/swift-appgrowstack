@@ -75,17 +75,23 @@ struct SessionsAppGrowStackTests {
     }
 
     @Test func aBatchThatWillNeverPassIsDropped() async throws {
-        #expect(try await stack(FakeHTTP([.success((400, #"{"error":{"code":"bad_request","message":"x"}}"#))])).sessionSink().send(batch) == .accepted())
+        for status in [400, 404, 413] {
+            #expect(try await stack(FakeHTTP([.success((status, #"{"error":{"code":"bad_request","message":"x"}}"#))])).sessionSink().send(batch) == .accepted())
+        }
     }
 
-    @Test func busyServersUnreadableAnswersAndNoConnectionKeepTheBatch() async {
-        for status in [429, 503] {
+    @Test func anAnswerThisVersionCannotReadStillTakesTheBatch() async throws {
+        // A newer server's `replay`: the batch arrived, so it must not stay at the head of the queue
+        #expect(try await stack(FakeHTTP([.success((200, #"{"replay":"stream"}"#))])).sessionSink().send(batch) == .accepted())
+        #expect(try await stack(FakeHTTP([.success((200, "{}"))])).sessionSink().send(batch) == .accepted())
+    }
+
+    @Test func busyServersTheKeyAndNoConnectionKeepTheBatch() async {
+        // 401 and 403 are the key or the project, fixed on the server: the same batch passes later
+        for status in [401, 403, 429, 503] {
             await #expect(throws: AppGrowStackSessionSink.Failure(status: status)) {
                 try await stack(FakeHTTP([.success((status, ""))])).sessionSink().send(batch)
             }
-        }
-        await #expect(throws: AppGrowStackSessionSink.Failure(status: 200)) {
-            try await stack(FakeHTTP([.success((200, "{}"))])).sessionSink().send(batch)
         }
         await #expect(throws: Offline.self) { try await stack(FakeHTTP([.failure(Offline())])).sessionSink().send(batch) }
     }

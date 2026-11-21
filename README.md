@@ -22,6 +22,8 @@ appgrowstack server: one `AppGrowStack` value, and one connector product per pac
   `stack.activity` for the support connector
 - **Environments.** `.production`, `.staging` and `.local(URL)`. Every request carries the public key
   and the `AppGrowStack-Client` header
+- **One answer table.** `AppGrowStackAnswer` reads every status the same way in every connector:
+  2xx is done, 401, 403, 408, 429 and 5xx are sent again later, and any other 4xx is dropped
 
 ### Connectors
 
@@ -52,7 +54,8 @@ let stack = AppGrowStack(
 @MainActor let attribution = AttributionReporter(
     installID: stack.installID,
     appVersion: stack.app.version,
-    resolver: stack.attributionResolver()
+    resolver: stack.attributionResolver(),
+    firstOpenAt: stack.firstSeenAt
 )
 ```
 

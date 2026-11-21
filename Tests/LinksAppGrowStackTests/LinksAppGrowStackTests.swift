@@ -51,7 +51,11 @@ struct LinksAppGrowStackTests {
 
     @Test func statusesMapToResolutions() async {
         #expect(await stack(FakeHTTP([.success((400, #"{"error":{"code":"invalid","message":"x"}}"#))])).attributionResolver().resolve(clues) == .rejected)
+        #expect(await stack(FakeHTTP([.success((404, ""))])).attributionResolver().resolve(clues) == .rejected)
         #expect(await stack(FakeHTTP([.success((503, ""))])).attributionResolver().resolve(clues) == .retryLater)
+        // 401 and 403 are the key or the project, fixed on the server: the same body passes later
+        #expect(await stack(FakeHTTP([.success((401, ""))])).attributionResolver().resolve(clues) == .retryLater)
+        #expect(await stack(FakeHTTP([.success((403, ""))])).attributionResolver().resolve(clues) == .retryLater)
         #expect(await stack(FakeHTTP([.success((429, ""))])).attributionResolver().resolve(clues) == .retryLater)
         #expect(await stack(FakeHTTP([.failure(Offline())])).attributionResolver().resolve(clues) == .retryLater)
     }

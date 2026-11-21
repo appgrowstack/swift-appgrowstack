@@ -50,9 +50,16 @@ struct NotificationsAppGrowStackTests {
     @Test func aBodyThatWillNeverPassIsNotRetried() async throws {
         // 400 (a malformed send_id) answers the same every time: done, not thrown.
         try await stack(FakeHTTP([.success(400)])).notificationOpenReporter().report(sendID: "x")
+        try await stack(FakeHTTP([.success(404)])).notificationOpenReporter().report(sendID: "x")
     }
 
-    @Test func busyServersAndNoConnectionThrow() async {
+    @Test func busyServersTheKeyAndNoConnectionThrow() async {
+        // 401 and 403 are the key or the project, fixed on the server: the open is kept and sent again
+        for status in [401, 403] {
+            await #expect(throws: AppGrowStackNotificationOpenReporter.Failure(status: status)) {
+                try await stack(FakeHTTP([.success(status)])).notificationOpenReporter().report(sendID: sendID)
+            }
+        }
         await #expect(throws: AppGrowStackNotificationOpenReporter.Failure(status: 429)) {
             try await stack(FakeHTTP([.success(429)])).notificationOpenReporter().report(sendID: sendID)
         }
