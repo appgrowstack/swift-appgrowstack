@@ -53,6 +53,17 @@ struct CampaignAppGrowStackTests {
         #expect(http.requests[1].value(forHTTPHeaderField: "If-None-Match") == "\"v4\"")
     }
 
+    @Test func contextCarriesTheBuildAndTheEarlierFirstSeenDate() {
+        let earlier = Date(timeIntervalSince1970: 1_700_000_000)
+        let storage = MemoryAppGrowStackStorage(firstSeenAt: Date(timeIntervalSince1970: 1_760_000_000))
+        let stack = AppGrowStack(publicKey: "pk_KUdMabcdefghijklmnopqrst", installID: "a1", firstSeenAt: earlier,
+                                 app: AppGrowStackApp(version: "3.3.0", build: "330", channel: .testFlight, lang: "ja", region: "JP"),
+                                 storage: storage, http: FakeHTTP([]))
+        let context = stack.campaignContext
+        #expect(context == CampaignContext(platform: "ios", appVersion: "3.3.0", build: "330", channel: "testflight",
+                                           lang: "ja", region: "JP", firstSeenAt: earlier))
+    }
+
     @Test func otherStatusesThrow() async {
         let source = stack(FakeHTTP([.success((503, "", [:]))])).campaignSource()
         await #expect(throws: CampaignSetFetchFailure(status: 503)) { try await source.fetch(etag: "\"v4\"") }

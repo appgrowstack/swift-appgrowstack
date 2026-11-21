@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `CampaignAppGrowStack`: `stack.campaignContext`, the engine's context from the stack's values with
+  the first-seen date.
+
 ## [0.1.0] - 2026-11-21
 
 ### Added

@@ -40,6 +40,17 @@ public struct AppGrowStackCampaignSetFetcher: CampaignSetFetching {
 }
 
 extension AppGrowStack {
+    /// The context for `CampaignEngine(context:)`, from the stack's values: the build, the channel,
+    /// the language and region, and the first-seen date (the earlier of the app's date and the stored
+    /// one), so `days_since_first_seen` counts from when the person really started. The time zone is
+    /// the device's; set `timeZone` on the value to use another.
+    public var campaignContext: CampaignContext {
+        CampaignContext(
+            platform: app.platform, appVersion: app.version, build: app.build, channel: app.channel.rawValue,
+            lang: app.lang, region: app.region ?? "", firstSeenAt: firstSeenAt
+        )
+    }
+
     /// The fetcher for `CampaignEngine(fetcher:)`.
     /// - Parameter fallback: the set shipped in the app (`BundledCampaignSetFetcher(resource: "campaigns")`),
     ///   used only until the first fetch succeeds.
