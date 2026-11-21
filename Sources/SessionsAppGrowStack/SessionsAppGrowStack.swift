@@ -3,7 +3,8 @@ import AppGrowStackCore
 import Foundation
 import SessionsCore
 
-/// Sends the light record's batches to appgrowstack: `POST /v1/sessions/batches`.
+/// Sends the light record's batches to appgrowstack: `POST /v1/sessions/batches`. The batch goes with
+/// `AppGrowStack.installID` as its `install_id`, whatever id the recorder kept.
 ///
 /// | Answer | Reply |
 /// |---|---|
@@ -22,6 +23,10 @@ public struct AppGrowStackSessionSink: SessionSink {
     }
 
     public func send(_ batch: SessionBatch) async throws -> SessionSinkReply {
+        // The recorder keeps its own id when the app does not hand it one. Send the stack's, so the light record
+        // joins the same install as the analytics, links and support on the server (the links sink does the same)
+        var batch = batch
+        batch.session.installID = stack.installID
         var request = stack.request("POST", "/v1/sessions/batches", sdk: SessionsSDK.name, version: SessionsSDK.version)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try batch.jsonData()

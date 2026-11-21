@@ -54,6 +54,16 @@ struct SessionsAppGrowStackTests {
         #expect(request.httpBody == (try batch.jsonData()))
     }
 
+    @Test func theBatchGoesWithTheStacksInstallID() async throws {
+        var own = batch
+        own.session.installID = "ffffffff-0000-4000-8000-000000000001"
+        let http = FakeHTTP([.success((200, #"{"replay":"buffer"}"#))])
+        _ = try await stack(http).sessionSink().send(own)
+        let body = try #require(http.requests.first?.httpBody)
+        let session = try #require((try JSONSerialization.jsonObject(with: body) as? [String: Any])?["session"] as? [String: Any])
+        #expect(session["install_id"] as? String == "a1b2c3d4-0000-4000-8000-00000000000f")
+    }
+
     @Test func theReplayDecisionAndTheNewerKeptPropsComeBack() async throws {
         let answer = #"{"replay":"record","upload_token":"\#(String(repeating: "a", count: 64))","policy":{"version":3,"updated_at":1795230000000,"project":"gamification-app","mask":"text","no_capture_screens":[],"screens":{},"events":{"keep_props":{"habit_achieved":["habit_kind"]}},"replay":{},"retention":{}}}"#
         let reply = try await stack(FakeHTTP([.success((200, answer))])).sessionSink().send(batch)
