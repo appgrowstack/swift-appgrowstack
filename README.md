@@ -34,6 +34,18 @@ let stack = AppGrowStack(
 )
 ```
 
+## Connectors
+
+| Product | Trait | SDK | What it adds |
+|---|---|---|---|
+| `LinksAppGrowStack` | `Links` | swift-app-links | `stack.attributionResolver()`: the install's source decided on the server (`POST /v1/links/attributions`), with the short links' own sources |
+
+```swift
+import LinksAppGrowStack
+
+let attribution = AttributionReporter(installID: stack.installID, appVersion: stack.app.version, resolver: stack.attributionResolver())
+```
+
 ## Installation
 
 Add the package and enable a trait for each SDK you use.

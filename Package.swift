@@ -30,14 +30,24 @@ let package = Package(
     ],
     products: [
         // The value every connector reads. Depends on no SDK.
-        .library(name: "AppGrowStackCore", targets: ["AppGrowStackCore"])
+        .library(name: "AppGrowStackCore", targets: ["AppGrowStackCore"]),
+        // stack.attributionResolver(): the install's source decided on the server. Trait "Links".
+        .library(name: "LinksAppGrowStack", targets: ["LinksAppGrowStack"])
     ],
     traits: [
+        .trait(name: "Links", description: "LinksAppGrowStack (swift-app-links)"),
         .default(enabledTraits: [])
     ],
-    dependencies: [],
+    dependencies: [
+        sdk("swift-app-links", from: "0.2.0")
+    ],
     targets: [
         .target(name: "AppGrowStackCore"),
-        .testTarget(name: "AppGrowStackCoreTests", dependencies: ["AppGrowStackCore"])
+        .target(name: "LinksAppGrowStack", dependencies: [
+            "AppGrowStackCore",
+            .product(name: "AppLinks", package: "swift-app-links", condition: .when(traits: ["Links"]))
+        ]),
+        .testTarget(name: "AppGrowStackCoreTests", dependencies: ["AppGrowStackCore"]),
+        .testTarget(name: "LinksAppGrowStackTests", dependencies: ["LinksAppGrowStack", "AppGrowStackCore"])
     ]
 )

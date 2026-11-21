@@ -29,6 +29,18 @@ let stack = AppGrowStack(
 )
 ```
 
+## コネクタ
+
+| product | trait | SDK | 足す物 |
+|---|---|---|---|
+| `LinksAppGrowStack` | `Links` | swift-app-links | `stack.attributionResolver()`：流入元をサーバーで決める（`POST /v1/links/attributions`）。短いリンクに書いた流入元も使う |
+
+```swift
+import LinksAppGrowStack
+
+let attribution = AttributionReporter(installID: stack.installID, appVersion: stack.app.version, resolver: stack.attributionResolver())
+```
+
 ## 入れ方
 
 パッケージを足し、使うSDKのtraitを有効にします。

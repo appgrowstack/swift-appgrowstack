@@ -13,3 +13,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   lowercase install id, first-seen date, recent activity, the `AppGrowStack-Client` header).
 - Connector targets are added per SDK behind a trait of the same name, so an app fetches only the
   SDKs it enables.
+- `LinksAppGrowStack` (trait `Links`, swift-app-links 0.2): `stack.attributionResolver()` decides the
+  install's source with `POST /v1/links/attributions`.
