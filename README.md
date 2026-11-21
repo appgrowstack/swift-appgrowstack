@@ -40,6 +40,7 @@ let stack = AppGrowStack(
 |---|---|---|---|
 | `LinksAppGrowStack` | `Links` | swift-app-links | `stack.attributionResolver()`: the install's source decided on the server (`POST /v1/links/attributions`), with the short links' own sources |
 | `SupportAppGrowStack` | `Support` | swift-app-support | `stack.supportTransport()`: requests with screenshots, the install's own requests and replies (owner token in the Keychain) and help articles on the server. `stack.supportContext()`: the context with the stack's recent events and campaigns shown |
+| `CampaignAppGrowStack` | `Campaign` | swift-app-campaign | `stack.campaignSource(fallback:)`: the set fetched from the server (ETag, 304), the bundled set until the first fetch succeeds |
 
 ```swift
 import LinksAppGrowStack
@@ -52,6 +53,12 @@ import SupportAppGrowStack
 
 let support = SupportCenter(transport: stack.supportTransport(uid: { auth.uid }), lang: "ja",
                             context: stack.supportContext(isPremium: { premium.isPremium }))
+```
+
+```swift
+import CampaignAppGrowStack
+
+let campaigns = CampaignEngine(fetcher: stack.campaignSource(fallback: BundledCampaignSetFetcher(resource: "campaigns")), …)
 ```
 
 ## Installation

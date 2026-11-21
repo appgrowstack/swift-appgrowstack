@@ -35,16 +35,21 @@ let package = Package(
         .library(name: "LinksAppGrowStack", targets: ["LinksAppGrowStack"]),
         // stack.supportTransport() and stack.supportContext(): requests, replies, screenshots and help
         // articles on the server, with the stack's recent activity attached. Trait "Support".
-        .library(name: "SupportAppGrowStack", targets: ["SupportAppGrowStack"])
+        .library(name: "SupportAppGrowStack", targets: ["SupportAppGrowStack"]),
+        // stack.campaignSource(fallback:): the set fetched from the server (ETag, 304), the bundled
+        // set until the first fetch. Trait "Campaign".
+        .library(name: "CampaignAppGrowStack", targets: ["CampaignAppGrowStack"])
     ],
     traits: [
         .trait(name: "Links", description: "LinksAppGrowStack (swift-app-links)"),
         .trait(name: "Support", description: "SupportAppGrowStack (swift-app-support)"),
+        .trait(name: "Campaign", description: "CampaignAppGrowStack (swift-app-campaign)"),
         .default(enabledTraits: [])
     ],
     dependencies: [
         sdk("swift-app-links", from: "0.2.0"),
-        sdk("swift-app-support", from: "0.2.0")
+        sdk("swift-app-support", from: "0.2.0"),
+        sdk("swift-app-campaign", from: "0.3.0")
     ],
     targets: [
         .target(name: "AppGrowStackCore"),
@@ -56,8 +61,13 @@ let package = Package(
             "AppGrowStackCore",
             .product(name: "SupportCore", package: "swift-app-support", condition: .when(traits: ["Support"]))
         ]),
+        .target(name: "CampaignAppGrowStack", dependencies: [
+            "AppGrowStackCore",
+            .product(name: "CampaignCore", package: "swift-app-campaign", condition: .when(traits: ["Campaign"]))
+        ]),
         .testTarget(name: "AppGrowStackCoreTests", dependencies: ["AppGrowStackCore"]),
         .testTarget(name: "LinksAppGrowStackTests", dependencies: ["LinksAppGrowStack", "AppGrowStackCore"]),
-        .testTarget(name: "SupportAppGrowStackTests", dependencies: ["SupportAppGrowStack", "AppGrowStackCore"])
+        .testTarget(name: "SupportAppGrowStackTests", dependencies: ["SupportAppGrowStack", "AppGrowStackCore"]),
+        .testTarget(name: "CampaignAppGrowStackTests", dependencies: ["CampaignAppGrowStack", "AppGrowStackCore"])
     ]
 )

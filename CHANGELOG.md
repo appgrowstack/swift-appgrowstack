@@ -18,3 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `SupportAppGrowStack` (trait `Support`, swift-app-support 0.2): `stack.supportTransport()` (requests,
   screenshots, replies with the owner token in the Keychain, help articles on `/v1/support/*`) and
   `stack.supportContext()` (the context with the stack's recent activity).
+- `CampaignAppGrowStack` (trait `Campaign`, swift-app-campaign 0.3): `stack.campaignSource(fallback:)`
+  fetches the set with `GET /v1/campaigns/sets/<public key>` (ETag, 304, the `AppGrowStack-Client`
+  header naming swift-app-campaign) and uses the bundled set until the first fetch succeeds.
