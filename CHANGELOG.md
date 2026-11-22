@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-23
+
+### Changed
+
+- Depends on app-campaign 0.7.0 and app-sessions 0.2.0 (a person who already had what a `whats_new`
+  campaign announces is not shown it; `version_age_days` is available to campaign conditions).
+
 ## [0.5.0] - 2026-11-23
 
 ### Changed
