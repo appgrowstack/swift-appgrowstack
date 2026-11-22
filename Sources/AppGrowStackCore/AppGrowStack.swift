@@ -1,4 +1,6 @@
+import CryptoKit
 import Foundation
+import Security
 
 /// The one value that connects the app-* SDKs to appgrowstack.
 ///
@@ -28,6 +30,12 @@ public final class AppGrowStack: Sendable {
     /// by the support connector.
     public let activity: AppGrowStackActivity
     public let isInternalDevice: @Sendable () -> Bool
+    /// `sha256(publicKey + ":" + device id)` in lowercase hex (64 characters), sent as
+    /// `AppGrowStack-Device` on every request. The device id is kept in the Keychain
+    /// (``KeychainAppGrowStackDeviceStore``), so it stays the same when the app is deleted and
+    /// installed again and when the person makes a new account. The raw id never leaves the device;
+    /// hashing with the public key gives each project a different value.
+    public let deviceHash: String
     let http: any AppGrowStackHTTP
 
     /// - Parameters:
@@ -35,6 +43,8 @@ public final class AppGrowStack: Sendable {
     ///   - firstSeenAt: when the person first used the app, if the app knew it before this value
     ///     existed. The earlier of this and the stored date is kept.
     ///   - storage: where the first-seen date is kept between launches.
+    ///   - deviceStore: where the device id is kept. The Keychain by default; tests pass
+    ///     ``MemoryAppGrowStackDeviceStore``.
     ///   - http: sends the connectors' requests. `URLSession.shared` by default; tests pass a fake.
     public init(
         publicKey: String,
@@ -44,6 +54,7 @@ public final class AppGrowStack: Sendable {
         app: AppGrowStackApp,
         isInternalDevice: @escaping @Sendable () -> Bool = { false },
         storage: any AppGrowStackStorage = UserDefaultsAppGrowStackStorage(),
+        deviceStore: any AppGrowStackDeviceStore = KeychainAppGrowStackDeviceStore(),
         http: any AppGrowStackHTTP = URLSessionAppGrowStackHTTP(),
         now: () -> Date = Date.init
     ) {
@@ -54,6 +65,7 @@ public final class AppGrowStack: Sendable {
         self.isInternalDevice = isInternalDevice
         self.http = http
         self.activity = AppGrowStackActivity()
+        self.deviceHash = Self.deviceHash(publicKey: publicKey, deviceID: deviceStore.deviceID())
         let stored = storage.firstSeenAt
         let earliest = [stored, firstSeenAt, stored == nil && firstSeenAt == nil ? now() : nil].compactMap { $0 }.min()!
         if stored != earliest { storage.firstSeenAt = earliest }
@@ -67,6 +79,11 @@ public final class AppGrowStack: Sendable {
         return { id }
     }
 
+    /// `sha256(publicKey + ":" + deviceID)` in lowercase hex (the contract's `DeviceHash`).
+    public static func deviceHash(publicKey: String, deviceID: String) -> String {
+        SHA256.hash(data: Data("\(publicKey):\(deviceID)".utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+
     /// `AppGrowStack-Client: <platform>/<app version>/<sdk>/<sdk version>` (contracts K2-5).
     ///
     /// `sdk` and `version` are the SDK the connector serves (`CampaignSDK.name`, `SessionsSDK.version`,
@@ -75,8 +92,10 @@ public final class AppGrowStack: Sendable {
         "\(app.platform)/\(app.version)/\(sdk)/\(version)"
     }
 
-    /// A request to `path` under the environment's root, with the public key and the client header
-    /// naming `sdk` at `version` (``clientHeader(sdk:version:)``).
+    /// A request to `path` under the environment's root, with the public key, the client header
+    /// naming `sdk` at `version` (``clientHeader(sdk:version:)``), `AppGrowStack-Device`
+    /// (``deviceHash``) and `AppGrowStack-Install` (``installID``). The server reads the last two to
+    /// tell the owner's own devices from real users; the answer does not change with them.
     public func request(_ method: String, _ path: String, query: [URLQueryItem] = [], sdk: String, version: String) -> URLRequest {
         var components = URLComponents(url: environment.baseURL.appending(path: path), resolvingAgainstBaseURL: false)!
         if !query.isEmpty { components.queryItems = query }
@@ -84,6 +103,8 @@ public final class AppGrowStack: Sendable {
         request.httpMethod = method
         request.setValue("Bearer \(publicKey)", forHTTPHeaderField: "Authorization")
         request.setValue(clientHeader(sdk: sdk, version: version), forHTTPHeaderField: "AppGrowStack-Client")
+        request.setValue(deviceHash, forHTTPHeaderField: "AppGrowStack-Device")
+        request.setValue(installID, forHTTPHeaderField: "AppGrowStack-Install")
         return request
     }
 
@@ -184,6 +205,82 @@ public final class MemoryAppGrowStackStorage: AppGrowStackStorage, @unchecked Se
     public var firstSeenAt: Date? {
         get { lock.withLock { stored } }
         set { lock.withLock { stored = newValue } }
+    }
+}
+
+/// Where the device id is kept. It is made once and read on every launch.
+public protocol AppGrowStackDeviceStore: Sendable {
+    /// The device id, made and kept on the first call.
+    func deviceID() -> String
+}
+
+/// The device id in the Keychain: a generic password (service `com.appgrowstack.device`, account
+/// `device_id`) readable after the first unlock, on this device only and never synced to iCloud
+/// (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, not synchronizable). Keychain items stay when
+/// the app is deleted, so the id stays the same across reinstalls and new accounts.
+///
+/// If the Keychain cannot be read or written, the id is kept in `UserDefaults`
+/// (`appgrowstack.device_id`) instead. That copy is removed with the app, so the id changes on reinstall.
+public struct KeychainAppGrowStackDeviceStore: AppGrowStackDeviceStore, @unchecked Sendable {
+    public static let service = "com.appgrowstack.device"
+    public static let account = "device_id"
+    private let defaults: UserDefaults
+
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    public func deviceID() -> String {
+        if let stored = read() { return stored }
+        let made = UUID().uuidString.lowercased()
+        if write(made), let stored = read() { return stored }
+        // The Keychain is not usable: keep the id in UserDefaults.
+        if let fallback = defaults.string(forKey: "appgrowstack.device_id") { return fallback }
+        defaults.set(made, forKey: "appgrowstack.device_id")
+        return made
+    }
+
+    private var query: [String: Any] {
+        [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.service,
+            kSecAttrAccount as String: Self.account,
+            kSecAttrSynchronizable as String: kCFBooleanFalse as Any
+        ]
+    }
+
+    private func read() -> String? {
+        var q = query
+        q[kSecReturnData as String] = true
+        q[kSecMatchLimit as String] = kSecMatchLimitOne
+        var out: CFTypeRef?
+        guard SecItemCopyMatching(q as CFDictionary, &out) == errSecSuccess, let data = out as? Data,
+              let id = String(data: data, encoding: .utf8), !id.isEmpty else { return nil }
+        return id
+    }
+
+    private func write(_ id: String) -> Bool {
+        var q = query
+        q[kSecValueData as String] = Data(id.utf8)
+        q[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        return SecItemAdd(q as CFDictionary, nil) == errSecSuccess
+    }
+}
+
+/// A device id in memory, for tests and previews.
+public final class MemoryAppGrowStackDeviceStore: AppGrowStackDeviceStore, @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: String?
+
+    public init(deviceID: String? = nil) { stored = deviceID }
+
+    public func deviceID() -> String {
+        lock.withLock {
+            if let stored { return stored }
+            let made = UUID().uuidString.lowercased()
+            stored = made
+            return made
+        }
     }
 }
 

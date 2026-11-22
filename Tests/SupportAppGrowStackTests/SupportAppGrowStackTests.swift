@@ -32,7 +32,7 @@ let articlesJSON = #"{"articles":[{"slug":"cancel-subscription","lang":"ja","tit
 func stack(_ http: FakeHTTP, environment: AppGrowStackEnvironment = .production) -> AppGrowStack {
     AppGrowStack(publicKey: "pk_KUdMabcdefghijklmnopqrst", environment: environment, installID: "A1B2C3D4-0000-4000-8000-000000000001",
                  app: AppGrowStackApp(version: "3.2.0", build: "120", channel: .appStore, lang: "ja"),
-                 storage: MemoryAppGrowStackStorage(), http: http)
+                 storage: MemoryAppGrowStackStorage(), deviceStore: MemoryAppGrowStackDeviceStore(deviceID: "abc"), http: http)
 }
 
 func context() -> SupportContext {

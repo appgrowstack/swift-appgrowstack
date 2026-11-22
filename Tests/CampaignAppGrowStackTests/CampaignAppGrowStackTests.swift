@@ -30,7 +30,7 @@ private var clientPattern: Regex<(Substring, Substring, Substring?, Substring?)>
 func stack(_ http: FakeHTTP) -> AppGrowStack {
     AppGrowStack(publicKey: "pk_KUdMabcdefghijklmnopqrst", environment: .production, installID: "a1",
                  app: AppGrowStackApp(version: "3.3.0", build: "330", channel: .appStore, lang: "ja"),
-                 storage: MemoryAppGrowStackStorage(), http: http)
+                 storage: MemoryAppGrowStackStorage(), deviceStore: MemoryAppGrowStackDeviceStore(deviceID: "abc"), http: http)
 }
 
 let bundled = BundledCampaignSetFetcher(data: Data(#"{"version":1,"campaigns":[]}"#.utf8))
@@ -46,6 +46,9 @@ struct CampaignAppGrowStackTests {
         #expect(first.httpMethod == "GET")
         #expect(first.url?.absoluteString == "https://api.appgrowstack.com/v1/campaigns/sets/pk_KUdMabcdefghijklmnopqrst")
         #expect(first.value(forHTTPHeaderField: "Authorization") == nil)
+        // The set is the same for everyone; the device headers are only read on the server
+        #expect(first.value(forHTTPHeaderField: "AppGrowStack-Device") == AppGrowStack.deviceHash(publicKey: "pk_KUdMabcdefghijklmnopqrst", deviceID: "abc"))
+        #expect(first.value(forHTTPHeaderField: "AppGrowStack-Install") == "a1")
         #expect(first.value(forHTTPHeaderField: "If-None-Match") == nil)
         let client = try #require(first.value(forHTTPHeaderField: "AppGrowStack-Client"))
         #expect(client == "ios/3.3.0/swift-app-campaign/\(CampaignSDK.version)")
@@ -58,7 +61,7 @@ struct CampaignAppGrowStackTests {
         let storage = MemoryAppGrowStackStorage(firstSeenAt: Date(timeIntervalSince1970: 1_760_000_000))
         let stack = AppGrowStack(publicKey: "pk_KUdMabcdefghijklmnopqrst", installID: "a1", firstSeenAt: earlier,
                                  app: AppGrowStackApp(version: "3.3.0", build: "330", channel: .testFlight, lang: "ja", region: "JP"),
-                                 storage: storage, http: FakeHTTP([]))
+                                 storage: storage, deviceStore: MemoryAppGrowStackDeviceStore(deviceID: "abc"), http: FakeHTTP([]))
         let context = stack.campaignContext
         #expect(context == CampaignContext(platform: "ios", appVersion: "3.3.0", build: "330", channel: "testflight",
                                            lang: "ja", region: "JP", firstSeenAt: earlier))

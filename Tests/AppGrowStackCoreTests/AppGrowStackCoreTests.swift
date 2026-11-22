@@ -28,7 +28,8 @@ func stack(
     now: Date = Date(timeIntervalSince1970: 1_800_000_000)
 ) -> AppGrowStack {
     AppGrowStack(publicKey: "pk_KUdMabcdefghijklmnopqrst", environment: environment, installID: installID,
-                 firstSeenAt: firstSeenAt, app: app, storage: storage, http: http, now: { now })
+                 firstSeenAt: firstSeenAt, app: app, storage: storage, deviceStore: MemoryAppGrowStackDeviceStore(deviceID: "abc"),
+                 http: http, now: { now })
 }
 
 struct AppGrowStackTests {
@@ -56,7 +57,24 @@ struct AppGrowStackTests {
         #expect(sent.value(forHTTPHeaderField: "Authorization") == "Bearer pk_KUdMabcdefghijklmnopqrst")
         // contracts K2-5: <platform>/<app version>/<sdk>/<sdk version>, naming the SDK the connector serves
         #expect(sent.value(forHTTPHeaderField: "AppGrowStack-Client") == "ios/3.3.0/swift-app-support/0.2.0")
+        // The device and the install, so the server can tell the owner's own devices from real users
+        #expect(sent.value(forHTTPHeaderField: "AppGrowStack-Device") == s.deviceHash)
+        #expect(sent.value(forHTTPHeaderField: "AppGrowStack-Install") == "a1b2c3d4-0000-4000-8000-00000000000f")
         #expect(s.clientHeader(sdk: "swift-app-sessions", version: "0.1.0").wholeMatch(of: /(ios|android)\/\d+\.\d+(\.\d+)?\/[a-z][a-z0-9-]{1,40}\/\d+\.\d+\.\d+/) != nil)
+    }
+
+    @Test func deviceHashIsTheKeyAndTheDeviceIDHashed() {
+        // printf 'pk_test:abc' | shasum -a 256
+        #expect(AppGrowStack.deviceHash(publicKey: "pk_test", deviceID: "abc") == "019c2453551530342433732c677ebdc4884cb460f82c50210db34be67c48bf49")
+        let s = stack()
+        #expect(s.deviceHash == AppGrowStack.deviceHash(publicKey: "pk_KUdMabcdefghijklmnopqrst", deviceID: "abc"))
+        #expect(s.deviceHash.wholeMatch(of: /[0-9a-f]{64}/) != nil)
+    }
+
+    @Test func theDeviceIDIsMadeOnceAndKept() {
+        let store = MemoryAppGrowStackDeviceStore()
+        let first = store.deviceID()
+        #expect(store.deviceID() == first)
     }
 
     @Test func firstSeenIsTheEarliestAndIsKept() {

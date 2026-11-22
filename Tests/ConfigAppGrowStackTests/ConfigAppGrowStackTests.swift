@@ -27,7 +27,7 @@ struct Offline: Error {}
 func stack(_ http: FakeHTTP) -> AppGrowStack {
     AppGrowStack(publicKey: "pk_KUdMabcdefghijklmnopqrst", environment: .production, installID: "a1",
                  app: AppGrowStackApp(version: "2.4.0", build: "240", channel: .appStore, lang: "ja", region: "JP"),
-                 storage: MemoryAppGrowStackStorage(), http: http)
+                 storage: MemoryAppGrowStackStorage(), deviceStore: MemoryAppGrowStackDeviceStore(deviceID: "abc"), http: http)
 }
 
 let bundled = BundledConfigSetSource(data: Data(#"{"schema_version":1,"project":"reading-memory","version":0,"published_at":0,"flags":{}}"#.utf8))

@@ -22,6 +22,15 @@ appgrowstack server: one `AppGrowStack` value, and one connector product per pac
   `stack.activity` for the support connector
 - **Environments.** `.production`, `.staging` and `.local(URL)`. Every request carries the public key
   and the `AppGrowStack-Client` header
+- **The owner's own devices.** Every request also carries `AppGrowStack-Device` (`stack.deviceHash`)
+  and `AppGrowStack-Install` (the install id), so appgrowstack can count only real users and keep the
+  owner's own devices out of the numbers. The device id is a random id made once and kept in the
+  Keychain (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, not synced to iCloud), so it stays the
+  same when the app is deleted and installed again and when a new account is made. Only
+  `sha256(public key + ":" + device id)` is sent; the raw id never leaves the device. The owner marks a
+  device once by opening the owner link from the appgrowstack console on that device and then opening
+  the app on the same network. If the Keychain cannot be used, the id is kept in `UserDefaults` (it then
+  changes on reinstall). Tests pass `deviceStore: MemoryAppGrowStackDeviceStore()`
 - **One answer table.** `AppGrowStackAnswer` reads every status the same way in every connector:
   2xx is done, 401, 403, 408, 429 and 5xx are sent again later, and any other 4xx is dropped
 

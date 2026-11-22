@@ -16,6 +16,7 @@ swift-app-*のパッケージはどれも単体で動きます。このパッケ
 - **コネクターはパッケージごとに、traitで分ける。** コネクターは同じ名前のtraitを有効にしたときだけ、そのパッケージに依存します。SwiftPMは使うパッケージだけを取りに行きます
 - **共通の情報。** install idの小文字への揃えは1か所で行います。初回の日付は知っている中で一番早い物にします（指定しなければ `UserDefaults` に保存）。直近の出来事と出したキャンペーンは、問い合わせのコネクターのために `stack.activity` に持ちます
 - **環境。** `.production`・`.staging`・`.local(URL)`。どのリクエストにも公開キーと `AppGrowStack-Client` のヘッダーを付けます
+- **本人の端末。**どのリクエストにも`AppGrowStack-Device`（`stack.deviceHash`）と`AppGrowStack-Install`（install id）のヘッダーも付けます。appgrowstackはこれで本人の端末を数から外し、利用者だけを数えます。端末のidは最初に1回作る乱数で、キーチェーンに置きます（`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`・iCloudに同期しない）。アプリを消して入れ直しても、アカウントを作り直しても変わりません。送るのは`sha256(公開キー+ ":" +端末のid)`だけで、端末のidそのものは端末の外に出ません。本人は、appgrowstackのconsoleの本人のリンクをその端末で開き、同じネットワークのままアプリを開いて、端末に1回だけマークを付けます。キーチェーンが使えないときは`UserDefaults`に置きます（そのときは入れ直すと変わります）。テストは`deviceStore: MemoryAppGrowStackDeviceStore()`を渡します
 - **答えの読み方は1つの表。** `AppGrowStackAnswer` がどのコネクターでも同じに読みます。2xxは終わり、401・403・408・429・5xxは後で送り直し、ほかの4xxは捨てます
 
 ### コネクター

@@ -27,7 +27,7 @@ struct Offline: Error {}
 func stack(_ http: FakeHTTP) -> AppGrowStack {
     AppGrowStack(publicKey: "pk_KUdMabcdefghijklmnopqrst", environment: .production, installID: "A1B2",
                  app: AppGrowStackApp(version: "3.4.0", build: "340", channel: .appStore, lang: "ja"),
-                 storage: MemoryAppGrowStackStorage(), http: http)
+                 storage: MemoryAppGrowStackStorage(), deviceStore: MemoryAppGrowStackDeviceStore(deviceID: "abc"), http: http)
 }
 
 let sendID = "0f8e2b1c-3d4a-4b5c-8d6e-7f8091a2b3c4"

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `AppGrowStackCore`: every request carries `AppGrowStack-Device` (`stack.deviceHash`,
+  `sha256(publicKey + ":" + device id)` in lowercase hex) and `AppGrowStack-Install` (the install id),
+  so the server can tell the owner's own devices from real users. The device id is made once and kept
+  in the Keychain (`KeychainAppGrowStackDeviceStore`: generic password, service
+  `com.appgrowstack.device`, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, not synchronizable),
+  so it stays the same across reinstalls and new accounts. If the Keychain cannot be used, it is kept
+  in `UserDefaults`. `AppGrowStack.init` takes `deviceStore:`; tests pass `MemoryAppGrowStackDeviceStore`.
+
 ## [0.3.0] - 2026-11-22
 
 ### Added
