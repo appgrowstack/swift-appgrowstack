@@ -9,7 +9,7 @@ import PackageDescription
 /// `CampaignAppGrowStack` alone never fetches swift-app-sessions:
 ///
 /// ```swift
-/// .package(url: "https://github.com/appgrowstack/swift-appgrowstack.git", .upToNextMinor(from: "0.3.0"), traits: ["Campaign"])
+/// .package(url: "https://github.com/appgrowstack/swift-appgrowstack.git", .upToNextMinor(from: "0.4.0"), traits: ["Campaign"])
 /// ```
 ///
 /// Inside the monorepo (`APPGROWSTACK_LOCAL` set) the SDKs are taken from the sibling folders.

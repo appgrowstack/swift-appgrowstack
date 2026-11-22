@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-22
+
 ### Added
 
 - `AppGrowStackCore`: every request carries `AppGrowStack-Device` (`stack.deviceHash`,
