@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-23
+
+### Changed
+
+- Depends on app-campaign 0.6.0 and app-config 0.2.0 (the campaign and config judges read the
+  server-resolved `app_version` range).
+
 ## [0.4.0] - 2026-11-22
 
 ### Added

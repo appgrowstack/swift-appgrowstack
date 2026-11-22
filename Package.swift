@@ -9,7 +9,7 @@ import PackageDescription
 /// `CampaignAppGrowStack` alone never fetches swift-app-sessions:
 ///
 /// ```swift
-/// .package(url: "https://github.com/appgrowstack/swift-appgrowstack.git", .upToNextMinor(from: "0.4.0"), traits: ["Campaign"])
+/// .package(url: "https://github.com/appgrowstack/swift-appgrowstack.git", .upToNextMinor(from: "0.5.0"), traits: ["Campaign"])
 /// ```
 ///
 /// Inside the monorepo (`APPGROWSTACK_LOCAL` set) the SDKs are taken from the sibling folders.
@@ -59,10 +59,10 @@ let package = Package(
     dependencies: [
         sdk("swift-app-links", from: "0.3.0"),
         sdk("swift-app-support", from: "0.4.0"),
-        sdk("swift-app-campaign", from: "0.5.0"),
+        sdk("swift-app-campaign", from: "0.6.0"),
         sdk("swift-app-notifications", from: "0.3.0"),
         sdk("swift-app-sessions", from: "0.1.1"),
-        sdk("swift-app-config", from: "0.1.0")
+        sdk("swift-app-config", from: "0.2.0")
     ],
     targets: [
         .target(name: "AppGrowStackCore"),
