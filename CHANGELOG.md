@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `stack.sessionReplaySink()` (`AppGrowStackReplaySink`): the recording's segments to
+  `PUT /v1/sessions/:session_id/segments/:seq` with `X-Session-Install` and `X-Session-Upload`. 403 and 404
+  drop the session's segments, other 4xx drop the segment, 401, 408, 429 and 5xx keep it for later.
+- `stack.sessionLiveConnector()` (`AppGrowStackLiveConnector`): the live view's WebSocket.
+
+### Changed
+
+- `stack.sessionSink()` reads `upload_token` and `live` from the batch answer.
+
 ## [0.6.0] - 2026-11-23
 
 ### Changed

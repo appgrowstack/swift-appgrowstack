@@ -61,7 +61,7 @@ let package = Package(
         sdk("swift-app-support", from: "0.4.0"),
         sdk("swift-app-campaign", from: "0.7.0"),
         sdk("swift-app-notifications", from: "0.3.0"),
-        sdk("swift-app-sessions", from: "0.2.0"),
+        sdk("swift-app-sessions", from: "0.3.0"),
         sdk("swift-app-config", from: "0.2.0")
     ],
     targets: [

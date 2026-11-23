@@ -28,7 +28,7 @@ swift-app-*のパッケージはどれも単体で動きます。このパッケ
 | `SupportAppGrowStack` | `Support` | swift-app-support | `stack.supportTransport(uid:tokens:)`: スクリーンショット付きの問い合わせ・そのインストールの問い合わせと返事（オーナーのトークンはKeychain）・ヘルプの記事をサーバーで扱う。`stack.supportContext(isPremium:sessionID:)`: 直近の出来事と出したキャンペーンを含む情報 |
 | `CampaignAppGrowStack` | `Campaign` | swift-app-campaign | `stack.campaignSource(fallback:)`: 組をサーバーから取る（ETag・304）。最初の取得が通るまでは同梱した組を使う |
 | `NotificationsAppGrowStack` | `Notifications` | swift-app-notifications | `stack.notificationOpenReporter()`: 通知が開かれたことをサーバーに伝える（`POST /v1/notify/opened`）。`report(sendID:)` を `NotificationCenterDelegate(reportOpened:)` に渡す |
-| `SessionsAppGrowStack` | `Sessions` | swift-app-sessions | `stack.sessionSink()`: 軽い記録のバッチを送る `SessionSink`（`POST /v1/sessions/batches`）。サーバーが決めたリプレイの要否と残すプロパティを返す |
+| `SessionsAppGrowStack` | `Sessions` | swift-app-sessions | `stack.sessionSink()`: 軽い記録のバッチを送る `SessionSink`（`POST /v1/sessions/batches`）。サーバーが決めた録画の要否・残すプロパティ・録画を送るためのトークン・ライブの依頼を返す。`stack.sessionReplaySink()`: 録画の塊を送る（`PUT /v1/sessions/:session_id/segments/:seq`）。`stack.sessionLiveConnector()`: ライブの WebSocket |
 | `ConfigAppGrowStack` | `Config` | swift-app-config | `stack.configSource(fallback:)` と `stack.configContext`: 設定の組をサーバーから取る（ETag・304）。最初の取得が通るまでは同梱した組を使う |
 
 ## はじめに

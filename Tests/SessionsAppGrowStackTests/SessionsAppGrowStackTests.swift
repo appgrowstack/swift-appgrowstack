@@ -95,5 +95,42 @@ struct SessionsAppGrowStackTests {
         }
         await #expect(throws: Offline.self) { try await stack(FakeHTTP([.failure(Offline())])).sessionSink().send(batch) }
     }
+
+    // MARK: - The recording
+
+    @Test func theFirstAnswerCarriesTheUploadTokenAndTheLiveOffer() async throws {
+        let token = "1795900000." + String(repeating: "a", count: 64)
+        let live = "1795231800." + String(repeating: "b", count: 64)
+        let body = #"{"replay":"record","upload_token":"\#(token)","live":{"token":"\#(live)","url":"wss://api-staging.appgrowstack.com/v1/sessions/live"}}"#
+        let reply = try await stack(FakeHTTP([.success((200, body))])).sessionSink().send(batch)
+        #expect(reply == .accepted(replay: .record, keepProps: nil, uploadToken: token,
+                                   live: SessionLiveOffer(token: live, url: URL(string: "wss://api-staging.appgrowstack.com/v1/sessions/live")!)))
+    }
+
+    @Test func aSegmentIsPutWithTheInstallAndTheToken() async throws {
+        let http = FakeHTTP([.success((204, ""))])
+        let upload = SessionReplayUpload(sessionID: "ses_abcdefghijklmnopqrst", seq: 3, token: "1795900000." + String(repeating: "c", count: 64),
+                                         body: Data("AGSR".utf8))
+        #expect(try await stack(http).sessionReplaySink().upload(upload) == .stored)
+        let request = try #require(http.requests.first)
+        #expect(request.httpMethod == "PUT")
+        #expect(request.url?.absoluteString == "https://api-staging.appgrowstack.com/v1/sessions/ses_abcdefghijklmnopqrst/segments/3")
+        #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/vnd.appgrowstack.replay-segment")
+        #expect(request.value(forHTTPHeaderField: "X-Session-Install") == "a1b2c3d4-0000-4000-8000-00000000000f")
+        #expect(request.value(forHTTPHeaderField: "X-Session-Upload") == upload.token)
+        #expect(request.httpBody == upload.body)
+    }
+
+    @Test func segmentAnswers() async throws {
+        let upload = SessionReplayUpload(sessionID: "ses_abcdefghijklmnopqrst", seq: 0, token: "t", body: Data([1]))
+        for (status, reply) in [(403, SessionReplayUploadReply.dropSession), (404, .dropSession), (400, .dropSegment), (413, .dropSegment), (415, .dropSegment)] {
+            #expect(try await stack(FakeHTTP([.success((status, ""))])).sessionReplaySink().upload(upload) == reply)
+        }
+        for status in [401, 408, 429, 503] {
+            await #expect(throws: AppGrowStackReplaySink.Failure(status: status)) {
+                try await stack(FakeHTTP([.success((status, ""))])).sessionReplaySink().upload(upload)
+            }
+        }
+    }
 }
 #endif
