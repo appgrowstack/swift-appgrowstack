@@ -67,7 +67,7 @@ struct SessionsAppGrowStackTests {
     @Test func theReplayDecisionAndTheNewerKeptPropsComeBack() async throws {
         let answer = #"{"replay":"record","upload_token":"\#(String(repeating: "a", count: 64))","policy":{"version":3,"updated_at":1795230000000,"project":"gamification-app","mask":"text","no_capture_screens":[],"screens":{},"events":{"keep_props":{"habit_achieved":["habit_kind"]}},"replay":{},"retention":{}}}"#
         let reply = try await stack(FakeHTTP([.success((200, answer))])).sessionSink().send(batch)
-        #expect(reply == .accepted(replay: .record, keepProps: ["habit_achieved": ["habit_kind"]]))
+        #expect(reply == .accepted(replay: .record, keepProps: ["habit_achieved": ["habit_kind"]], uploadToken: String(repeating: "a", count: 64)))
     }
 
     @Test func sessionsTurnedOffAnswerDisabled() async throws {
