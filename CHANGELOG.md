@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-11-24
+
+### Changed
+
+- `SessionsAppGrowStack` takes swift-app-sessions 0.4.0: a slow device keeps recording (one frame in 5 seconds
+  over 33ms, stopped only over 100ms), and the recording's `replay_stats` go out with the batches.
+
 ## [0.7.0] - 2026-11-23
 
 ### Added
