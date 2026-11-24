@@ -176,4 +176,31 @@ extension AppGrowStack {
         AppGrowStackLiveConnector(stack: self, session: session)
     }
 }
+
+extension AppGrowStack {
+    /// The prop keys the server reads into the data lake's `events.session_id` and `events.screen`.
+    public static let sessionIDProp = "session_id"
+    public static let screenProp = "screen"
+
+    /// The props that tie an analytics event to the session it happened in: `session_id` (the
+    /// current session's id) and `screen` (the current screen), each only when there is one. Empty
+    /// without `sessions` (an app that does not record sessions) and before the first session starts.
+    ///
+    /// Read it as each event is tracked, from any thread:
+    ///
+    /// ```swift
+    /// AnalyticsBatchSink(app: "gamification_app", endpoint: url,
+    ///                    extraProps: { AppGrowStack.sessionEventProps(sessions) })
+    /// ```
+    ///
+    /// The server joins the event to the session's record and its recording with them, so a
+    /// purchase or a paywall can be found in the session it happened in.
+    public static func sessionEventProps(_ sessions: AppSessions?) -> [String: String] {
+        guard let now = sessions?.now else { return [:] }
+        var props: [String: String] = [:]
+        if let id = now.sessionID, !id.isEmpty { props[sessionIDProp] = id }
+        if let screen = now.screen, !screen.isEmpty { props[screenProp] = screen }
+        return props
+    }
+}
 #endif

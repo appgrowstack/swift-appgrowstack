@@ -3,6 +3,7 @@ import AppGrowStackCore
 import Foundation
 import SessionsAppGrowStack
 import SessionsCore
+import SessionsTesting
 import Testing
 
 final class FakeHTTP: AppGrowStackHTTP, @unchecked Sendable {
@@ -40,6 +41,23 @@ let batch = SessionBatch(
     seq: 0, events: [])
 
 struct SessionsAppGrowStackTests {
+    @MainActor @Test func eventPropsCarryTheSessionAndTheScreen() async {
+        let sessions = AppSessions(sink: DebugSessionSink(log: nil), deviceInfo: { .test() },
+                                   store: InMemorySessionStateStore(), clock: FakeSessionClock(), ids: SequenceSessionIDs())
+        // No recorder (an app without sessions) and a recorder not started yet: nothing is added
+        #expect(AppGrowStack.sessionEventProps(nil).isEmpty)
+        #expect(AppGrowStack.sessionEventProps(sessions).isEmpty)
+
+        sessions.start()
+        #expect(AppGrowStack.sessionEventProps(sessions) == ["session_id": "ses_test0000000000000001"])
+
+        sessions.screen("paywall")
+        // Read off the main actor, as the analytics sink does when an event is tracked
+        let props = await Task.detached { AppGrowStack.sessionEventProps(sessions) }.value
+        #expect(props == ["session_id": "ses_test0000000000000001", "screen": "paywall"])
+        await sessions.waitForSending()
+    }
+
     @Test func postsTheBatchAsItsJSON() async throws {
         let http = FakeHTTP([.success((200, #"{"replay":"buffer"}"#))])
         let reply = try await stack(http).sessionSink().send(batch)

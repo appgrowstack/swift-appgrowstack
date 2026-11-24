@@ -98,7 +98,8 @@ let package = Package(
         .testTarget(name: "SessionsAppGrowStackTests", dependencies: [
             "SessionsAppGrowStack",
             "AppGrowStackCore",
-            .product(name: "SessionsCore", package: "swift-app-sessions", condition: .when(traits: ["Sessions"]))
+            .product(name: "SessionsCore", package: "swift-app-sessions", condition: .when(traits: ["Sessions"])),
+            .product(name: "SessionsTesting", package: "swift-app-sessions", condition: .when(traits: ["Sessions"]))
         ]),
         .testTarget(name: "ConfigAppGrowStackTests", dependencies: ["ConfigAppGrowStack", "AppGrowStackCore"])
     ]
