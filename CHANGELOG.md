@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-26
+
 ### Added
 
 - `SessionsAppGrowStack`: `AppGrowStack.sessionEventProps(_:)` gives the props that tie an analytics event to the session it happened in,
