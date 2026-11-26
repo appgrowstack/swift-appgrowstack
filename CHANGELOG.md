@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-27
+
+### Changed
+
+- The `Sessions` trait depends on swift-app-sessions 0.5.1 (a tap on a layer drawn over the screen takes its name from that layer only).
+
 ## [0.9.0] - 2026-11-26
 
 ### Added
